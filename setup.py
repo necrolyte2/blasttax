@@ -14,6 +14,11 @@ setup(
         'nose',
         'mock',
     ],
+    entry_points = {
+        'console_scripts': [
+            'blasttax = blasttax:main'
+        ]
+    },
     install_requires = [],
     author = 'Tyghe Vallard',
     author_email = 'vallardt@gmail.com',

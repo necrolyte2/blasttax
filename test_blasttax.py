@@ -5,7 +5,6 @@ from mock import *
 
 import blasttax
 
-
 names_dmp = '''1	|	all	|		|	synonym	|
 1	|	root	|		|	scientific name	|
 2	|	Bacteria	|	Bacteria <prokaryote>	|	scientific name	|
@@ -46,6 +45,33 @@ div_dmp = '''0	|	BCT	|	Bacteria	|		|
 11	|	ENV	|	Environmental samples	|	Anonymous sequences cloned directly from the environment	|
 '''
 
+class TestDmpline(unittest.TestCase):
+    def setUp(self):
+        class Foo(blasttax.DmpLine):
+            headers = ('1',)
+        self.klass = Foo
+
+    def test_incorrect_dmpline_type_given(self):
+        self.assertRaises(
+            ValueError,
+            self.klass,
+            Mock()
+        )
+
+    def test_empty_line_given_to_constructor(self):
+        self.assertRaises(
+            ValueError,
+            self.klass,
+            ''
+        )
+
+    def test_dmpline_has_different_number_of_items_than_headers(self):
+        self.assertRaises(
+            ValueError, 
+            self.klass,
+            '\t|\t'.join([str(i) for i in range(30)])
+        )
+
 class TestNode(unittest.TestCase):
     def setUp(self):
         self.dmpline = nodes_dmp.splitlines()[0]
@@ -67,20 +93,6 @@ class TestNode(unittest.TestCase):
         self.assertEqual(r.rank, 'no rank')
         self.assertEqual(r.division, '8')
 
-    def test_empty_line(self):
-        self.assertRaises(
-            ValueError,
-            blasttax.Node,
-            ''
-        )
-
-    def test_line_has_to_many_items(self):
-        self.assertRaises(
-            ValueError, 
-            blasttax.Node,
-            '\t|\t'.join([str(i) for i in range(30)])
-        )
-
 class TestName(unittest.TestCase):
     def setUp(self):
         self.dmpline = names_dmp.splitlines()[2]
@@ -97,20 +109,6 @@ class TestName(unittest.TestCase):
         r = blasttax.Name(l)
         self.assertEqual(r.id, '2')
         self.assertEqual(r.name, 'Bacteria')
-
-    def test_empty_line(self):
-        self.assertRaises(
-            ValueError,
-            blasttax.Name,
-            ''
-        )
-
-    def test_line_has_to_many_items(self):
-        self.assertRaises(
-            ValueError, 
-            blasttax.Name,
-            '\t|\t'.join([str(i) for i in range(30)])
-        )
 
 class TestDivision(unittest.TestCase):
     def setUp(self):
@@ -130,20 +128,6 @@ class TestDivision(unittest.TestCase):
         self.assertEqual(r.id, '0')
         self.assertEqual(r.name, 'Bacteria')
         self.assertEqual(r.code, 'BCT')
-
-    def test_empty_line(self):
-        self.assertRaises(
-            ValueError,
-            blasttax.Division,
-            ''
-        )
-
-    def test_line_has_to_many_items(self):
-        self.assertRaises(
-            ValueError, 
-            blasttax.Division,
-            '\t|\t'.join([str(i) for i in range(30)])
-        )
 
 class TestIndexDmpfile(unittest.TestCase):
     def test_indexes_by_id(self):
@@ -197,11 +181,29 @@ class TestPhylo(unittest.TestCase):
         self.assertEqual(r.order, ['ordername'])
         self.assertEqual(r.family, ['familyname'])
 
-    def test_no_phylo_for_taxid(self):
+    def test_no_phylo_for_taxid_in_nameindex(self):
+        nameindex = {}
         self.assertRaises(
             ValueError,
             blasttax.Phylo,
-            '99', self.nameindex, self.nodeindex, self.divindex
+            '2', nameindex, self.nodeindex, self.divindex
+        )
+
+    def test_no_phylo_for_taxid_in_nodeindex(self):
+        nodeindex = {}
+        self.assertRaises(
+            ValueError,
+            blasttax.Phylo,
+            '2', self.nameindex, nodeindex, self.divindex
+        )
+
+    def test_does_not_have_attribute(self):
+        r = blasttax.Phylo(
+            '2', self.nameindex, self.nodeindex, self.divindex
+        )
+        self.assertRaises(
+            AttributeError,
+            r.__getattr__, 'missing'
         )
 
     def test_str_returns_ordered_phylogony(self):
@@ -217,6 +219,16 @@ class TestPhylo(unittest.TestCase):
             '6', self.nameindex, self.nodeindex, self.divindex
         ).__str__()
         self.assertEquals(e, r)
+
+    def test_only_builds_phylogony_once(self):
+        r = blasttax.Phylo(
+            '2', self.nameindex, self.nodeindex, self.divindex
+        )
+        r.species
+        r.phylo = MagicMock()
+        r.phylo.append.side_effect = Exception('should not be called')
+        r.species
+        r._build_phylogony('2')
 
 class TestPhylogony(unittest.TestCase):
     def setUp(self):

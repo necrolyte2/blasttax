@@ -34,6 +34,8 @@ class DmpLine(object):
 
     def parse(self, dmpline, headers):
         splitline = re.split('\t\|\t', dmpline)
+        if splitline[0] == '' and len(splitline) == 1:
+            splitline = []
         self._setattrs(splitline, headers)
 
 class Node(DmpLine):
@@ -114,10 +116,7 @@ class Phylo(object):
     
     def __getattr__(self, attr):
         if attr not in self.__dict__:
-            try:
-                self._build_phylogony(self.taxid)
-            except IndexError as e:
-                pass
+            self._build_phylogony(self.taxid)
         try:
             return self.__dict__[attr]
         except KeyError as e:
@@ -130,6 +129,7 @@ class Phylo(object):
         From a given taxid build the full phylogony
         The taxid will be recursively looked up in the nodes/names
         '''
+        # Only build phylogony once
         if 'phylo' not in self.__dict__:
             self.__dict__['phylo'] = []
         else:
@@ -221,6 +221,3 @@ def parse_args():
     )
 
     return parser.parse_args()
-
-if __name__ == '__main__':
-    main()
