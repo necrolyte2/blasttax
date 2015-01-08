@@ -10,7 +10,10 @@ setup(
     name = 'blasttax',
     version = __version__,
     py_modules = ['blasttax'],
-    setup_requires = [],
+    setup_requires = [
+        'nose',
+        'python-coveralls'
+    ],
     tests_require = [
         'nose',
         'mock',
