@@ -264,3 +264,26 @@ class TestPhylogony(unittest.TestCase):
             r = self.inst['1']
             r = self.inst['2']
             self.assertEqual(0, mock.call_count)
+
+class TestMain(unittest.TestCase):
+    def setUp(self):
+        self.divfh = MagicMock()
+        self.nodefh = MagicMock()
+        self.namefh = MagicMock()
+        self.namefh.__enter__.return_value = names_dmp.splitlines()
+        self.nodefh.__enter__.return_value = nodes_dmp.splitlines()
+        self.divfh.__enter__.return_value = div_dmp.splitlines()
+
+    @patch('blasttax.argparse.ArgumentParser.parse_args')
+    def test_prints_taxonomy_to_console(self, mock_parse_args):
+        with patch('blasttax.sys') as msys:
+            with patch('blasttax.open') as mopen:
+                mock_parse_args.return_value.taxid = '2'
+                mock_parse_args.return_value.namedmp = self.namefh
+                mock_parse_args.return_value.nodedmp = self.nodefh
+                mock_parse_args.return_value.divisiondmp = self.divfh
+                r = blasttax.main()
+                msys.stdout.write.assert_called_with(
+                    'Bacteria(species) -> genusname(genus) -> '\
+                    'ordername(order) -> familyname(family)\n'
+                )

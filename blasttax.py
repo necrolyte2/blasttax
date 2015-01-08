@@ -11,6 +11,7 @@ import glob
 import re
 import collections
 import argparse
+import sys
 
 __version__ = '0.0.1-dev'
 
@@ -195,7 +196,7 @@ class Phylogony(object):
 def main():
     args = parse_args()
     p = Phylogony(args.namedmp, args.nodedmp, args.divisiondmp)
-    print(p[args.taxid])
+    sys.stdout.write(str(p[args.taxid]) + '\n')
 
 def parse_args():
     parser = argparse.ArgumentParser()
