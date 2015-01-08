@@ -53,3 +53,8 @@ docs/_build/
 
 # PyBuilder
 target/
+
+# Project
+*.dmp
+readme.txt
+gc.prt
