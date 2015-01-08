@@ -51,7 +51,6 @@ class TestNode(unittest.TestCase):
         self.dmpline = nodes_dmp.splitlines()[0]
 
     def test_from_dmpline(self):
-        print self.dmpline
         r = blasttax.Node(
             self.dmpline
         )
@@ -148,7 +147,7 @@ class TestDivision(unittest.TestCase):
 
 class TestIndexDmpfile(unittest.TestCase):
     def test_indexes_by_id(self):
-        with patch('__builtin__.open') as mopen:
+        with patch('blasttax.open') as mopen:
             mopen.return_value.__enter__.return_value = names_dmp.splitlines()
             r = blasttax.index_dmpfile('/path/to/names.dmp', 'Name')
             self.assertEqual(r['1'][0].id, '1')
@@ -165,7 +164,7 @@ class TestIndexDmpfile(unittest.TestCase):
         )
 
     def test_accepts_filehandle(self):
-        handle = MagicMock(file)
+        handle = MagicMock()
         handle.__enter__.return_value = names_dmp.splitlines()
         r = blasttax.index_dmpfile(handle, 'Name')
         self.assertEqual(r['1'][0].id, '1')
@@ -175,9 +174,9 @@ class TestIndexDmpfile(unittest.TestCase):
 
 class TestPhylo(unittest.TestCase):
     def setUp(self):
-        self.divfh = MagicMock(file)
-        self.nodefh = MagicMock(file)
-        self.namefh = MagicMock(file)
+        self.divfh = MagicMock()
+        self.nodefh = MagicMock()
+        self.namefh = MagicMock()
         self.namefh.__enter__.return_value = names_dmp.splitlines()
         self.nodefh.__enter__.return_value = nodes_dmp.splitlines()
         self.divfh.__enter__.return_value = div_dmp.splitlines()
@@ -221,9 +220,9 @@ class TestPhylo(unittest.TestCase):
 
 class TestPhylogony(unittest.TestCase):
     def setUp(self):
-        self.divfh = MagicMock(file)
-        self.nodefh = MagicMock(file)
-        self.namefh = MagicMock(file)
+        self.divfh = MagicMock()
+        self.nodefh = MagicMock()
+        self.namefh = MagicMock()
         self.namefh.__enter__.return_value = names_dmp.splitlines()
         self.nodefh.__enter__.return_value = nodes_dmp.splitlines()
         self.divfh.__enter__.return_value = div_dmp.splitlines()

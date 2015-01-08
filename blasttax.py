@@ -1,3 +1,10 @@
+from __future__ import absolute_import, division, print_function
+
+try:
+    from builtins import open
+except ImportError as e:
+    from __builtin__ import open
+
 import os
 import os.path
 import glob
@@ -123,8 +130,8 @@ class Phylo(object):
         From a given taxid build the full phylogony
         The taxid will be recursively looked up in the nodes/names
         '''
-        if not hasattr(self, 'phylo'):
-            setattr(self, 'phylo', [])
+        if 'phylo' not in self.__dict__:
+            self.__dict__['phylo'] = []
         else:
             return
         curnames, curnode, curdiv = self._get_name_node_div(taxid)
@@ -183,12 +190,12 @@ class Phylogony(object):
         try:
             return Phylo(key, self.nameindex, self.nodeindex, self.divindex)
         except ValueError as e:
-            raise KeyError(e.message)
+            raise KeyError(str(e))
 
 def main():
     args = parse_args()
     p = Phylogony(args.namedmp, args.nodedmp, args.divisiondmp)
-    print p[args.taxid]
+    print(p[args.taxid])
 
 def parse_args():
     parser = argparse.ArgumentParser()
